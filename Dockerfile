@@ -1,15 +1,18 @@
 FROM alpine:edge
 
+LABEL version="1.2"
 LABEL org.label-schema.name="Snapcast Server Docker" \
-	  org.label-schema.description="Snapcast server and Avahi on alpine image" \
+	  org.label-schema.description="Snapcast server on alpine image with Avahi and D-Bus support" \
 	  org.label-schema.schema-version="1.0"
 
 RUN apk -U add snapcast-server \
-	&& mkdir -p /tmp/snapcast/ \
+	&& mkdir -p /tmp/snapcast/
 	&& mkfifo /tmp/snapcast/fifo \
 	&& apk add -U avahi \
-	&& sed -i 's/#enable-dbus=yes/enable-dbus=no/g' /etc/avahi/avahi-daemon.conf \
-    && avahi-daemon -D \
+	&& apk add dbus \
+	&& dbus-uuidgen > /var/lib/dbus/machine-id \
+	&& mkdir -p /var/run/dbus \
+	&& dbus-daemon --config-file=/usr/share/dbus-1/system.conf --print-address \
 	&& rm -rf /etc/ssl /var/cache/apk/* /lib/apk/db/* 
 	
-CMD snapserver --config=/etc/snapserver.conf
+ENTRYPOINT ["avahi-daemon -D", "snapserver --config=/etc/snapserver.conf"]
