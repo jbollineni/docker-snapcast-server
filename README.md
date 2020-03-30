@@ -5,6 +5,8 @@ Docker image of Snapcast server with Avahi support
 ## Dockerfile
 
 ~~~ go
+FROM alpine:edge
+
 LABEL version="1.2"
 LABEL org.label-schema.name="Snapcast Server Docker" \
 	  org.label-schema.description="Snapcast server on alpine image with Avahi and D-Bus support" \
