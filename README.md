@@ -5,30 +5,22 @@ Docker image of Snapcast server with Avahi support
 ## Dockerfile
 
 ~~~ go
-FROM alpine:edge
-
-ARG BUILD_DATE
-ARG VCS_REF
-ARG VERSION
-LABEL org.label-schema.build-date=$BUILD_DATE \
-	  org.label-schema.name="Snapcast Server Docker" \
-	  org.label-schema.description="Snapcast server and Avahi on alpine image" \
-	  org.label-schema.url="" \
-	  org.label-schema.vcs-ref=$VCS_REF \
-	  org.label-schema.vcs-url="" \
-	  org.label-schema.vendor="" \
-	  org.label-schema.version=$VERSION \
+LABEL version="1.2"
+LABEL org.label-schema.name="Snapcast Server Docker" \
+	  org.label-schema.description="Snapcast server on alpine image with Avahi and D-Bus support" \
 	  org.label-schema.schema-version="1.0"
 
 RUN apk -U add snapcast-server \
 	&& mkdir -p /tmp/snapcast/
-	&& mkfifo /tmp/snapcast/fifo
-	&& apk add -U avahi
-	&& sed -i 's/#enable-dbus=yes/enable-dbus=no/g' /etc/avahi/avahi-daemon.conf
+	&& mkfifo /tmp/snapcast/fifo \
+	&& apk add -U avahi \
+	&& apk add dbus \
+	&& dbus-uuidgen > /var/lib/dbus/machine-id \
+	&& mkdir -p /var/run/dbus \
+	&& dbus-daemon --config-file=/usr/share/dbus-1/system.conf --print-address \
 	&& rm -rf /etc/ssl /var/cache/apk/* /lib/apk/db/* 
 	
-CMD snapserver --config=/etc/snapserver.conf
-
+ENTRYPOINT ["avahi-daemon -D", "snapserver --config=/etc/snapserver.conf"]
 ~~~
 
 ## Examples
