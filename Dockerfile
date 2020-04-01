@@ -7,12 +7,11 @@ LABEL org.label-schema.name="Snapcast Server Docker" \
 
 RUN apk -U add snapcast-server \
 	&& mkdir -p /tmp/snapcast/ \
-	&& mkfifo /tmp/snapcast/fifo \
 	&& apk add -U avahi \
 	&& apk add dbus \
 	&& dbus-uuidgen > /var/lib/dbus/machine-id \
 	&& mkdir -p /var/run/dbus \
 	&& dbus-daemon --config-file=/usr/share/dbus-1/system.conf --print-address \
-	&& rm -rf /etc/ssl /var/cache/apk/* /lib/apk/db/* 
-	
-ENTRYPOINT ["avahi-daemon -D", "snapserver --config=/etc/snapserver.conf"]
+	&& rm -rf /etc/ssl /var/cache/apk/* /lib/apk/db/*
+
+CMD avahi-daemon; snapserver --config=/etc/snapserver.conf
